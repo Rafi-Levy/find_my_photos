@@ -1,4 +1,7 @@
-@echo off
+const fs = require('fs');
+const path = require('path');
+
+const content = `@echo off
 title Kid Photo Auto-Forwarder
 echo ========================================================
 echo   WhatsApp Kid-Photo Auto-Forwarder
@@ -56,7 +59,7 @@ if not exist "node_modules" (
 )
 
 :: 4. Ensure Face-API models exist
-if not exist "models\ssd_mobilenetv1_model.bin" (
+if not exist "models\\ssd_mobilenetv1_model.bin" (
     echo [INFO] Setting up neural network face models...
     call node download-models.js
 )
@@ -74,3 +77,18 @@ node server.js
 echo.
 echo App stopped. Press any key to close this window.
 pause >nul
+`.replace(/\r?\n/g, '\r\n');
+
+const paths = [
+  path.resolve(__dirname, '..', 'start.bat'),
+  'C:\\Users\\Lenovo\\Pictures\\test\\find_my_photos\\start.bat'
+];
+
+for (const p of paths) {
+  try {
+    fs.writeFileSync(p, content, 'binary');
+    console.log(`Updated ${p} with CRLF line endings.`);
+  } catch (err) {
+    console.warn(`Could not write to ${p}:`, err.message);
+  }
+}
