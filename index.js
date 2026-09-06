@@ -47,7 +47,7 @@ const config = {
   enableForwarding:      process.env.ENABLE_FORWARDING === 'true',
   allowGroupForwarding:  process.env.ALLOW_GROUP_FORWARDING === 'true',
   // Nightly Auto-Restart (cleans Chromium RAM and refreshes session)
-  autoRestartEnabled:    process.env.AUTO_RESTART_ENABLED !== 'false',
+  autoRestartEnabled:    process.env.AUTO_RESTART_ENABLED === 'true',
   autoRestartTimeUtc:    process.env.AUTO_RESTART_TIME_UTC || '00:00',
   autoRestartMode:       (process.env.AUTO_RESTART_MODE || 'in-process').toLowerCase()
 };
