@@ -15,6 +15,7 @@ document.addEventListener('DOMContentLoaded', () => {
     trainBadge: document.getElementById('train-badge'),
     
     // Header & Status
+    btnDesktopShortcut: document.getElementById('btn-desktop-shortcut'),
     waStatusPill: document.getElementById('wa-status-pill'),
     waStatusText: document.getElementById('wa-status-text'),
     btnLogout: document.getElementById('btn-logout'),
@@ -41,7 +42,10 @@ document.addEventListener('DOMContentLoaded', () => {
     btnClearStats: document.getElementById('btn-clear-stats'),
     btnOpenPreviewFolder: document.getElementById('btn-open-preview-folder'),
 
-    // Training
+    // Training & Profiles
+    inputChildName: document.getElementById('input-child-name'),
+    enrolledProfilesContainer: document.getElementById('enrolled-profiles-container'),
+    enrolledProfilesList: document.getElementById('enrolled-profiles-list'),
     dropZone: document.getElementById('drop-zone'),
     fileInput: document.getElementById('file-input'),
     btnBrowseFiles: document.getElementById('btn-browse-files'),
@@ -56,6 +60,17 @@ document.addEventListener('DOMContentLoaded', () => {
     trainProgressFill: document.getElementById('train-progress-fill'),
     trainProgressDetails: document.getElementById('train-progress-details'),
     trainLogList: document.getElementById('train-log-list'),
+
+    // Test Simulator Playground
+    testDropZone: document.getElementById('test-drop-zone'),
+    testFileInput: document.getElementById('test-file-input'),
+    btnBrowseTestFile: document.getElementById('btn-browse-test-file'),
+    testResultBox: document.getElementById('test-result-box'),
+    testResultBadge: document.getElementById('test-result-badge'),
+    testResultFaces: document.getElementById('test-result-faces'),
+    testResultScore: document.getElementById('test-result-score'),
+    testResultVerdict: document.getElementById('test-result-verdict'),
+    testResultAdvice: document.getElementById('test-result-advice'),
 
     // Settings
     settingsForm: document.getElementById('settings-form'),
@@ -223,16 +238,40 @@ document.addEventListener('DOMContentLoaded', () => {
       elements.trainBadge.style.display = 'none';
       elements.trainingStatusBadge.className = 'badge badge-success';
       elements.trainingStatusBadge.textContent = 'Trained & Ready';
-      elements.statChildStatus.textContent = `Face Profile: ${status.referenceInfo?.photosUsed || 'Active'} photos`;
-      elements.trainStatusText.textContent = 'Child face profile active';
-      elements.trainStatusSub = 'You can add more photos anytime to refine accuracy.';
+
+      const children = status.referenceInfo?.children || [];
+      const names = children.map(c => c.name).join(', ') || 'Active';
+      elements.statChildStatus.textContent = `Face Profile: ${names}`;
+
+      if (elements.enrolledProfilesContainer && children.length > 0) {
+        elements.enrolledProfilesContainer.style.display = 'block';
+        elements.enrolledProfilesList.innerHTML = children.map(c => `
+          <span class="profile-pill">
+            👶 <strong>${escapeHtml(c.name)}</strong> (${c.photosUsed} photos)
+            <button class="profile-delete" title="Remove profile" data-name="${escapeHtml(c.name)}">✕</button>
+          </span>
+        `).join('');
+
+        elements.enrolledProfilesList.querySelectorAll('.profile-delete').forEach(btn => {
+          btn.addEventListener('click', async (e) => {
+            e.stopPropagation();
+            const name = btn.dataset.name;
+            if (confirm(`Remove face profile for "${name}"?`)) {
+              await fetch(`/api/train/profiles/${encodeURIComponent(name)}`, { method: 'DELETE' });
+              showToast(`Removed profile for ${name}`);
+              fetchInitialStatus();
+            }
+          });
+        });
+      }
     } else {
       elements.trainBadge.style.display = 'inline-block';
       elements.trainingStatusBadge.className = 'badge badge-warning';
       elements.trainingStatusBadge.textContent = 'Training Required';
       elements.statChildStatus.textContent = 'Face Profile: Missing';
-      elements.trainStatusText.textContent = 'No face profile enrolled yet';
-      elements.trainStatusSub = 'Upload 5 to 15 photos of your child and press Train.';
+      if (elements.enrolledProfilesContainer) {
+        elements.enrolledProfilesContainer.style.display = 'none';
+      }
     }
 
     // Quick Setup Callout
@@ -495,26 +534,49 @@ document.addEventListener('DOMContentLoaded', () => {
 
   elements.btnRefreshPhotos.addEventListener('click', loadTrainingPhotos);
 
+  // Desktop Shortcut Handler
+  elements.btnDesktopShortcut?.addEventListener('click', async () => {
+    try {
+      showToast('Creating desktop shortcut...');
+      const res = await fetch('/api/shortcut', { method: 'POST' });
+      const data = await res.json();
+      if (data.success) {
+        showToast('✓ Shortcut created on your Desktop!');
+      } else {
+        showToast('Could not create shortcut: ' + (data.error || 'Unknown error'));
+      }
+    } catch {
+      showToast('Error creating desktop shortcut');
+    }
+  });
+
   // Run Training
   elements.btnRunTrain.addEventListener('click', async () => {
     if (isTraining) return;
     isTraining = true;
 
+    const childName = elements.inputChildName ? elements.inputChildName.value.trim() || 'My Child' : 'My Child';
+
     elements.btnRunTrain.disabled = true;
     elements.btnRunTrain.innerHTML = '<span>⏳ Training in progress...</span>';
     elements.trainProgressBox.style.display = 'block';
     elements.trainProgressFill.style.width = '5%';
-    elements.trainProgressDetails.textContent = 'Initializing neural network...';
+    elements.trainProgressDetails.textContent = `Initializing neural network for ${childName}...`;
     elements.trainLogList.innerHTML = '';
 
     try {
-      const res = await fetch('/api/train/run', { method: 'POST' });
+      const res = await fetch('/api/train/run', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ childName })
+      });
       const data = await res.json();
 
       if (data.success) {
         elements.trainProgressFill.style.width = '100%';
-        elements.trainProgressDetails.textContent = `🎉 Training successful! ${data.result.photosUsed} photos recognized.`;
-        showToast('Child face recognition trained successfully!');
+        elements.trainProgressDetails.textContent = `🎉 Training successful! ${data.result.photosUsed} photos recognized for "${childName}".`;
+        showToast(`Face profile for ${childName} trained successfully!`);
+        fetchInitialStatus();
       } else {
         elements.trainProgressDetails.textContent = `⚠ Training failed: ${data.error}`;
         showToast(data.error || 'Training failed');
@@ -539,6 +601,93 @@ document.addEventListener('DOMContentLoaded', () => {
     item.textContent = `${progress.filename}: ${progress.detected ? 'Face detected ✓' : 'No face found ✗'}`;
     elements.trainLogList.appendChild(item);
     elements.trainLogList.scrollTop = elements.trainLogList.scrollHeight;
+  }
+
+  // =========================================================================
+  // Test Recognition Simulator (Playground)
+  // =========================================================================
+  elements.btnBrowseTestFile?.addEventListener('click', () => {
+    elements.testFileInput.click();
+  });
+
+  elements.testFileInput?.addEventListener('change', () => {
+    if (elements.testFileInput.files?.length) {
+      runTestPhoto(elements.testFileInput.files[0]);
+    }
+  });
+
+  elements.testDropZone?.addEventListener('dragover', (e) => {
+    e.preventDefault();
+    elements.testDropZone.classList.add('dragover');
+  });
+
+  elements.testDropZone?.addEventListener('dragleave', () => {
+    elements.testDropZone.classList.remove('dragover');
+  });
+
+  elements.testDropZone?.addEventListener('drop', (e) => {
+    e.preventDefault();
+    elements.testDropZone.classList.remove('dragover');
+    if (e.dataTransfer.files?.length) {
+      runTestPhoto(e.dataTransfer.files[0]);
+    }
+  });
+
+  async function runTestPhoto(file) {
+    const formData = new FormData();
+    formData.append('test_photo', file);
+
+    elements.testResultBox.style.display = 'block';
+    elements.testResultBadge.className = 'badge';
+    elements.testResultBadge.textContent = 'Testing...';
+    elements.testResultScore.textContent = 'Analyzing faces...';
+    elements.testResultScore.style.color = 'var(--text-main)';
+    elements.testResultVerdict.textContent = '';
+    elements.testResultAdvice.textContent = '';
+
+    try {
+      const res = await fetch('/api/train/test', {
+        method: 'POST',
+        body: formData
+      });
+      const data = await res.json();
+
+      if (!data.success) {
+        elements.testResultBadge.className = 'badge badge-match-no';
+        elements.testResultBadge.textContent = 'Test Failed';
+        elements.testResultScore.textContent = data.error || 'Error analyzing photo';
+        return;
+      }
+
+      const r = data.result;
+      elements.testResultFaces.textContent = `${r.facesCount} face(s) found in photo`;
+
+      if (r.matched) {
+        elements.testResultBadge.className = 'badge badge-match-yes';
+        elements.testResultBadge.textContent = 'Matched ✓';
+        elements.testResultScore.style.color = '#059669';
+        elements.testResultScore.textContent = `⭐ ${r.confidence}% Match Confidence${r.childName ? ` (${r.childName})` : ''}`;
+        elements.testResultVerdict.textContent = r.verdict;
+        elements.testResultAdvice.textContent = `Match distance: ${r.distance} (Strictness threshold: ${r.threshold}). This photo passes your forwarding criteria!`;
+      } else {
+        elements.testResultBadge.className = 'badge badge-match-no';
+        elements.testResultBadge.textContent = 'No Match ✗';
+        elements.testResultScore.style.color = '#dc2626';
+        elements.testResultScore.textContent = r.bestDistance ? `Closest Match: ${r.confidence}% (Below required threshold)` : 'No Child Recognized';
+        elements.testResultVerdict.textContent = r.verdict;
+        if (r.bestDistance && parseFloat(r.bestDistance) <= 0.58) {
+          elements.testResultAdvice.textContent = `Tip: The face scored a distance of ${r.bestDistance}. If this was your child, you can adjust recognition strictness in Settings to "Relaxed" to catch it!`;
+        } else {
+          elements.testResultAdvice.textContent = 'Make sure your child is clearly visible in the photo without obstruction or blur.';
+        }
+      }
+    } catch (err) {
+      elements.testResultBadge.className = 'badge badge-match-no';
+      elements.testResultBadge.textContent = 'Error';
+      elements.testResultScore.textContent = 'Failed to analyze test photo';
+    } finally {
+      elements.testFileInput.value = '';
+    }
   }
 
   // =========================================================================

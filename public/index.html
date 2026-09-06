@@ -22,6 +22,11 @@
       </div>
 
       <div class="nav-controls">
+        <!-- Add Desktop Shortcut Button -->
+        <button id="btn-desktop-shortcut" class="btn btn-sm btn-outline" title="Add a 1-click icon to your Windows Desktop">
+          🖥️ Desktop Shortcut
+        </button>
+
         <!-- WhatsApp Status Pill -->
         <div id="wa-status-pill" class="status-pill status-connecting">
           <span class="status-dot"></span>
@@ -229,12 +234,21 @@
           <!-- Train Action Bar -->
           <div class="train-action-bar">
             <div class="train-action-info">
-              <h4 id="train-status-text">Ready to train</h4>
-              <p id="train-status-sub">Press train whenever you add new photos.</p>
+              <div class="child-name-row">
+                <label for="input-child-name"><strong>Child's Name:</strong></label>
+                <input type="text" id="input-child-name" class="form-input-sm" value="My Child" placeholder="e.g. Liam or Maya" />
+              </div>
+              <p id="train-status-sub" style="margin-top: 4px;">Click train whenever you add new photos.</p>
             </div>
             <button id="btn-run-train" class="btn btn-lg btn-success">
               <span>🚀 Train Child Recognition</span>
             </button>
+          </div>
+
+          <!-- Enrolled Profiles List -->
+          <div id="enrolled-profiles-container" class="enrolled-profiles-container" style="display: none;">
+            <h4>Enrolled Children:</h4>
+            <div id="enrolled-profiles-list" class="enrolled-profiles-list"></div>
           </div>
 
           <!-- Training Progress Modal / Container -->
@@ -249,6 +263,39 @@
           </div>
 
         </div>
+
+        <!-- =================================================================== -->
+        <!-- TEST RECOGNITION SIMULATOR (PLAYGROUND) -->
+        <!-- =================================================================== -->
+        <div class="card test-card">
+          <div class="card-header">
+            <div class="header-title">
+              <h2>🧪 Test Recognition Simulator</h2>
+              <p class="header-sub">Drop any photo here from your phone or family album to test if the app recognizes your child before turning on live forwarding.</p>
+            </div>
+          </div>
+
+          <div id="test-drop-zone" class="drop-zone drop-zone-test">
+            <div class="drop-zone-icon">🔬</div>
+            <h3>Drop any test photo here</h3>
+            <p>or click below to select a photo from your computer</p>
+            <input type="file" id="test-file-input" accept="image/jpeg,image/png,image/webp" style="display: none;" />
+            <button id="btn-browse-test-file" class="btn btn-secondary" type="button">Select Test Photo</button>
+            <span class="drop-zone-note">Check group photos, party photos, or tricky angles to verify accuracy!</span>
+          </div>
+
+          <!-- Test Result Box -->
+          <div id="test-result-box" class="test-result-box" style="display: none;">
+            <div class="test-result-header">
+              <span id="test-result-badge" class="badge">Checking...</span>
+              <span id="test-result-faces" class="test-result-faces"></span>
+            </div>
+            <div id="test-result-score" class="test-result-score"></div>
+            <div id="test-result-verdict" class="test-result-verdict"></div>
+            <div id="test-result-advice" class="test-result-advice"></div>
+          </div>
+        </div>
+
       </section>
 
       <!-- =================================================================== -->

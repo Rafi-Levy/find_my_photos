@@ -197,16 +197,58 @@ app.delete('/api/train/photos/:name', (req, res) => {
   res.json({ success: deleted, all: engine.getTrainingPhotos() });
 });
 
+// Train - Profiles
+app.get('/api/train/profiles', (req, res) => {
+  res.json(engine.getReferenceInfo());
+});
+
+app.delete('/api/train/profiles/:name', (req, res) => {
+  const deleted = engine.deleteProfile(req.params.name);
+  res.json({ success: deleted, profiles: engine.getReferenceInfo() });
+});
+
 // Train - Run training
 app.post('/api/train/run', async (req, res) => {
   try {
+    const childName = req.body.childName || 'My Child';
     const result = await engine.runTraining((progress) => {
       broadcastEvent('train_progress', progress);
-    });
+    }, childName);
     res.json({ success: true, result });
   } catch (err) {
     res.status(400).json({ success: false, error: err.message });
   }
+});
+
+// Train - Test Photo Simulator
+app.post('/api/train/test', upload.single('test_photo'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ success: false, error: 'No test photo was uploaded.' });
+    }
+    const buffer = fs.readFileSync(req.file.path);
+    // Delete temp uploaded test photo after reading buffer
+    try { fs.unlinkSync(req.file.path); } catch {}
+
+    const result = await engine.testPhoto(buffer);
+    res.json({ success: true, result });
+  } catch (err) {
+    if (req.file?.path) {
+      try { fs.unlinkSync(req.file.path); } catch {}
+    }
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Desktop Shortcut Endpoint
+app.post('/api/shortcut', (req, res) => {
+  const psScript = path.join(__dirname, 'scripts', 'create-shortcut.ps1');
+  exec(`powershell -NoProfile -ExecutionPolicy Bypass -File "${psScript}"`, (err, stdout, stderr) => {
+    if (err) {
+      return res.status(500).json({ success: false, error: err.message });
+    }
+    res.json({ success: true, message: 'Shortcut created on Desktop!' });
+  });
 });
 
 // Start Server

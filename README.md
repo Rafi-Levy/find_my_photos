@@ -1,390 +1,136 @@
-# WhatsApp Kid-Photo Auto-Forwarder
+# 👶 WhatsApp Kid-Photo Auto-Forwarder
 
-A **local-only** desktop tool that monitors a WhatsApp group (e.g. your child's kindergarten group), detects photos and videos containing **your child's face**, and automatically forwards them to another chat.
+> **Never miss a photo of your child again.**  
+> An automatic, 100% private, on-device WhatsApp monitor that watches your child's kindergarten or school group, detects your child's face in incoming photos and videos, and automatically forwards them to you or your family group.
 
-**Everything runs on your machine** — no cloud services, no external APIs, no data leaves your laptop.
-
----
-
-## How It Works
-
-1. Connects to your WhatsApp account via WhatsApp Web protocol
-2. Watches a specific source group for incoming photos/videos
-3. Runs local face detection + recognition against a pre-enrolled reference of your child
-4. Forwards matching media (with original caption) to your target chat
-5. Ignores everything else — text messages, stickers, voice notes, documents
+[![100% Private](https://img.shields.io/badge/Privacy-100%25%20On--Device%20AI-success.svg)](#-100-privacy-guarantee)
+[![Zero Cloud](https://img.shields.io/badge/Cloud%20Services-None-blue.svg)](#-how-it-works)
+[![Windows 1-Click](https://img.shields.io/badge/Windows-1--Click%20Ready-brightgreen.svg)](#-quick-start-3-simple-steps)
 
 ---
 
-## Prerequisites
+## 🔒 100% Privacy Guarantee
 
-- **Node.js 18+** (LTS recommended) — [download here](https://nodejs.org/)
-  - Check your version: `node --version`
-- **WhatsApp** account with an active phone number
-- **5–15 clear photos** of your child (for enrollment)
-
-> **Note:** ffmpeg is bundled automatically via npm — no separate install needed.
-> Face recognition runs entirely in JavaScript (no native C++ compilation required).
+* **Zero Cloud Uploads:** All face recognition neural networks run strictly on your local PC via TensorFlow.js.
+* **No External APIs:** Not a single photo, embedding, phone number, or chat log ever leaves your computer.
+* **Zero Accidental Sends:** Built-in anti-echo guardrails prevent the bot from ever forwarding photos back to the kindergarten group.
+* **Practice Mode by Default:** Test with total peace of mind before arming live forwarding.
 
 ---
 
-## Quick Start
+## ✨ Features
 
-### 1. Install dependencies
+* 📊 **Simple Web Dashboard:** View live counters for photos checked, matches found, and forwarded media.
+* 📱 **Easy WhatsApp Pairing:** Scan a QR code right on your screen once—stays permanently linked.
+* 📸 **Drag & Drop Face Training:** Add 5–15 photos of your child and train face recognition with a single click.
+* 👨‍👩‍👧‍👦 **Multi-Child Profiles:** Enroll siblings (e.g. Liam & Maya) so photos of either child get detected.
+* 🧪 **Test Recognition Simulator:** Drop any photo from your phone or family album to test accuracy on the spot before going live.
+* ⚙️ **Plain English Settings:** Pick your kindergarten group and recipient from friendly dropdowns—no technical IDs or code.
+* 🖥️ **Desktop Shortcut:** 1-click desktop icon so you can launch the app directly from your Windows Desktop.
+
+---
+
+## 🚀 Quick Start (3 Simple Steps)
+
+### Step 1: Download the App
+1. Click the green **`<> Code`** button at the top of this GitHub page and click **`Download ZIP`**.
+2. Unzip the downloaded folder anywhere on your computer (e.g. Desktop or Documents).
+
+### Step 2: Double-Click `start.bat`
+* Simply double-click **`start.bat`** inside the folder!
+* The app automatically prepares everything and **opens your web browser** to the dashboard at:
+  ```
+  http://localhost:4848
+  ```
+*(Note: If your computer does not have Node.js installed yet, the launcher will offer to install it for you automatically).*
+
+### Step 3: Connect & Setup in Your Browser
+1. **Link WhatsApp:** Point your phone camera at the QR code on your screen (**WhatsApp → Settings → Linked Devices → Link a Device**).
+2. **Train Face:** Go to the **Child Photos & Training** tab, drag in 5–15 photos of your child, and click **🚀 Train Child Recognition**.
+3. **Select Chats:** Go to the **Settings** tab, choose your kindergarten group to watch and where you want photos sent, then click **💾 Save Settings**.
+
+**That's it!** Whenever you are in front of your computer, just open the app and let it run in the background.
+
+---
+
+## 🖥️ Optional: Add 1-Click Desktop Shortcut
+
+To launch the forwarder without opening the folder every time:
+* Double-click **`create-desktop-shortcut.bat`** inside the folder (or click **🖥️ Desktop Shortcut** inside the web dashboard).
+* A **"Kid Photo Forwarder"** shortcut will appear directly on your Windows Desktop!
+
+---
+
+## 🧪 Test Recognition Simulator
+
+Wondering if the AI will recognize tricky angles or group photos?
+1. Open the **Child Photos & Training** tab in the app.
+2. Scroll to the **🧪 Test Recognition Simulator**.
+3. Drop any photo from your family album or phone.
+4. The simulator will immediately analyze all faces and tell you:
+   * Confidence percentage (e.g. `⭐ 95% Match`).
+   * Whether this photo would be forwarded in live mode.
+   * Actionable tips to calibrate accuracy.
+
+---
+
+## ⚙️ Settings Explained
+
+| Setting | What it does | Recommended |
+|:---|:---|:---|
+| **Kindergarten Group** | The WhatsApp group to monitor for photos. | Select your class group |
+| **Where to Forward** | The recipient contact or family group. | Your personal chat or spouse |
+| **Practice Mode** | Saves matches to your computer for review without sending messages. | Use when first testing |
+| **Live Forwarding** | Automatically sends matched photos and videos right away. | Turn on when satisfied |
+| **Recognition Strictness** | **Strict:** Zero false alarms.<br>**Balanced:** Ideal everyday balance.<br>**Relaxed:** Catches difficult angles. | Balanced (0.50) |
+
+---
+
+## ❓ Frequently Asked Questions (FAQ)
+
+#### How long does it stay connected?
+* Thanks to WhatsApp's official Multi-Device protocol, your session stays linked permanently. You do **not** need to scan the QR code every day.
+* As long as your primary phone connects to WhatsApp at least once every 14 days, you will never be logged out.
+
+#### Can it accidentally send messages back to the kindergarten group?
+* **No.** The app includes a strict, non-bypassable **Anti-Echo Safety Guardrail**. If the target chat is set to the source group, messages are automatically blocked at the engine level.
+
+#### Can I close the browser tab?
+* Yes! The web browser is just the dashboard interface. The forwarder continues running in the background until you close the black launcher window.
+
+#### What formats are supported?
+* Photos: JPG, PNG, WEBP, BMP.
+* Videos: MP4, MOV (the app extracts frames and checks each frame for your child's face).
+
+---
+
+## 🛠️ Advanced Developer Usage (CLI Mode)
+
+If you prefer using the command line:
 
 ```bash
-cd photo_forward
+# Clone the repository
+git clone https://github.com/your-username/whatsapp-kid-photo-forwarder.git
+cd whatsapp-kid-photo-forwarder
+
+# Install dependencies & prepare face models
 npm install
-```
 
-> Neural network face-recognition models (~12 MB) are automatically copied and prepared during `npm install`.
-
-### 2. Run the Guided Setup Wizard
-
-```bash
-npm run setup
-```
-
-*(On Windows, you can simply double-click `setup.bat`)*
-
-The setup wizard will guide you step-by-step:
-1. **Auto-creates** your `.env` configuration and necessary folders
-2. **Enrolls your child's face** using photos in `train_photos/`
-3. **Connects to WhatsApp** and lets you search and select your kindergarten group (`SOURCE_CHAT_ID`) and destination chat (`TARGET_CHAT_ID`)
-
-### 3. (Optional) Test Face Recognition Offline
-
-Verify accuracy and threshold on any photo before starting:
-
-```bash
-npm run test-match -- path/to/photo.jpg
-```
-
-### 4. Start Monitoring
-
-```bash
+# Launch Web UI
 npm start
-```
 
-*(Or double-click `start.bat` on Windows)*
+# Or run terminal CLI daemon
+npm run cli
 
----
+# Diagnostic health check
+npm run doctor
 
-## Useful Helper Commands
-
-| Command | Description |
-|:---|:---|
-| `npm run setup` (or `setup.bat`) | Interactive guided wizard for 1-step onboarding |
-| `npm run doctor` | Pre-flight health check (verifies Node, models, reference, `.env`, FFmpeg) |
-| `npm run test-match -- <path>` | Test face recognition against your child's reference embedding offline |
-| `npm run matches` | View terminal summary of recent matches saved in `matches_preview/` |
-| `npm run test-safety` | Run the automated 6-point safety test suite (anti-echo, dry-run, group locks) |
-| `npm run search-chats` | Search WhatsApp chats interactively by name and update `.env` |
-| `npm run list-chats` | Print all WhatsApp groups and individual contacts with their IDs |
-| `npm run enroll` | Re-enroll child reference embedding from photos in `train_photos/` |
-
----
-
-## Manual Step-by-Step Setup (Alternative)
-
-### 4. Enroll your child's face
-
-Copy 5–15 clear photos of your child into the `train_photos/` folder:
-- Different angles (front, slight turns)
-- Different lighting conditions
-- Different expressions (smiling, neutral, laughing)
-- Face clearly visible (not too far, not too close)
-
-Then simply run:
-
-```bash
-npm run enroll
-```
-
-*(Or specify a custom folder: `npm run enroll -- ./custom-folder`)*
-
-You should see output like:
-
-```
-Found 10 image(s) in C:\Users\...\photos-of-my-kid
-Processing each photo for face detection...
-
-  photo1.jpg                              ✓ face detected
-  photo2.jpg                              ✓ face detected
-  photo3.jpg                              ✗ no face detected
-  ...
-
-✓ Reference embedding saved to: ./data/child-reference.json
-  Based on 8 face detections from 10 photos.
-```
-
-The script requires at least **3 successful face detections**. If too many fail, try clearer/brighter photos.
-
-> **What's stored:** Only a numeric embedding (128 numbers) — not the photos themselves.
-
-### 5. Find your WhatsApp chat IDs
-
-You can search your chats interactively by name (e.g. searching your kindergarten name or contact name):
-
-```bash
-npm run search-chats
-```
-
-This queries WhatsApp Web's internal IndexedDB (`chat`, `contact`, and `group-metadata`), displays matching chats, and automatically saves your selected `SOURCE_CHAT_ID` and `TARGET_CHAT_ID` directly into your `.env` file!
-
-Alternatively, to print all chats without searching:
-
-```bash
-npm run list-chats
-```
-
-On first run, a QR code will appear in your terminal. Scan it with WhatsApp:
-1. Open WhatsApp on your phone
-2. Go to **Settings → Linked Devices → Link a Device**
-3. Scan the terminal QR code
-
-After authentication, you'll see a list like:
-
-```
-══════════════════════════════════════════════════════════════════════════════════
-  YOUR WHATSAPP CHATS
-══════════════════════════════════════════════════════════════════════════════════
-
-  ── GROUPS (12) ───────────────────────────────────────────────────────────────
-  [GROUP]   Kindergarten Parents                     120363028374829@g.us
-  [GROUP]   Family                                   120363019283746@g.us
-  ...
-
-  ── CONTACTS (34) ─────────────────────────────────────────────────────────────
-  [PERSON]  Partner                                  123456789012@c.us
-  ...
-```
-
-Copy the IDs you need into your `.env` file:
-
-```env
-SOURCE_CHAT_ID=120363028374829@g.us    # The kindergarten group
-TARGET_CHAT_ID=123456789012@c.us       # Where to send matches (partner, family group, etc.)
-```
-
-### 6. Start monitoring
-
-```bash
-npm start
-```
-
-Or on Windows, double-click `start.bat`.
-
-The forwarder will:
-- Connect using your saved session (no QR scan needed on subsequent runs)
-- Load face recognition models
-- Begin monitoring the source group
-- Stay running until you press **Ctrl+C**
-
-```
-  ╔══════════════════════════════════════════╗
-  ║  WhatsApp Kid-Photo Auto-Forwarder       ║
-  ║  Local face recognition • No cloud       ║
-  ╚══════════════════════════════════════════╝
-
-  Watching:    120363028374829@g.us
-  Forwarding:  123456789012@c.us
-  Threshold:   0.5
-  Video frames: 5
-
-  Press Ctrl+C to stop.
+# Automated safety test suite
+npm run test-safety
 ```
 
 ---
 
-## Configuration Reference
+## 📄 License
 
-Edit `.env` to customize:
-
-| Setting | Default | Description |
-|:---|:---|:---|
-| `SOURCE_CHAT_ID` | *(required)* | Group to watch (`@g.us`) |
-| `TARGET_CHAT_ID` | *(required)* | Where to forward matches (`@g.us` or `@c.us`) |
-| `ENABLE_FORWARDING` | `false` | **Safety Switch**: When `false` (default), forwarder runs in **SAFE DRY-RUN** mode (zero WhatsApp messages sent; matches saved locally). Set to `true` only when ready! |
-| `ALLOW_GROUP_FORWARDING` | `false` | **Group Guard**: Set `true` only if `TARGET_CHAT_ID` is intentionally a group (`@g.us`). Prevents accidental group blasts. |
-| `MATCH_THRESHOLD` | `0.5` | Euclidean distance cutoff. Lower = stricter. Range: 0.3–0.7. Try `0.55`–`0.6` if missing matches. |
-| `VIDEO_FRAMES_TO_CHECK` | `5` | Number of evenly-spaced frames to sample from videos |
-| `MATCH_PREVIEW_PATH` | `./matches_preview` | Local directory where matched media & JSON audit logs are saved |
-| `REFERENCE_EMBEDDING_PATH` | `./data/child-reference.json` | Path to enrolled face embedding |
-| `SESSION_DATA_PATH` | `./.wwebjs_auth` | WhatsApp session storage |
-| `LOG_PATH` | `./logs/activity.log` | Activity log file |
-| `MODELS_PATH` | `./models` | Face-api model weights directory |
-
----
-
-## Safety Controls & Verification
-
-The forwarder includes **100% zero-mistake safety guardrails**:
-
-1. **Anti-Echo Protection**: If `TARGET_CHAT_ID` is accidentally set to the same group as `SOURCE_CHAT_ID`, the forwarder immediately aborts on startup and refuses to run.
-2. **Default Dry-Run Mode**: By default (`ENABLE_FORWARDING=false`), the bot runs in **Safe Mode**. It monitors messages, detects faces, and saves matching photos/videos into `./matches_preview/` with match distance scores and metadata, but **never sends any message over WhatsApp**.
-3. **Group Target Lock**: If you want to forward to a group instead of a 1:1 contact, you must explicitly configure `ALLOW_GROUP_FORWARDING=true`.
-4. **Safety Verification Suite**: Run automated checks before launching:
-   ```bash
-   npm run test-safety
-   ```
-   Runs 6 automated unit tests verifying that all block conditions and dry-run mechanisms function as expected.
-
-### Tuning the match threshold
-
-- **0.45–0.50**: Strict — fewer false positives, but may miss photos with unusual lighting/angles
-- **0.50–0.55**: Balanced — good starting point
-- **0.55–0.60**: Lenient — catches more matches, slight risk of false positives
-- **0.60+**: Very lenient — may forward photos of other children who look similar
-
-Start with the default (`0.5`) and increase if you notice missing matches.
-
----
-
-## Re-authenticating WhatsApp
-
-If your session expires (e.g. after being logged out from your phone, or after ~14 days of inactivity):
-
-1. Stop the running process (`Ctrl+C`)
-2. Delete the session folder: `rmdir /s .wwebjs_auth` (Windows) or `rm -rf .wwebjs_auth` (Mac/Linux)
-3. Start again: `npm start`
-4. Scan the new QR code with your phone
-
----
-
-## Re-enrolling
-
-If you want to update the reference embedding (e.g. your child has grown, or you have better photos):
-
-```bash
-npm run enroll -- ./path/to/newer-photos
-```
-
-This overwrites the previous embedding. No need to restart — the new embedding will be loaded on the next `npm start`.
-
----
-
-## Logs
-
-Activity is logged to `logs/activity.log` in JSON-lines format:
-
-```json
-{"timestamp":"2026-09-06T10:30:00.000Z","level":"INFO","message":"MATCH — image forwarded.","msgId":"3EB0...","mediaType":"image","distance":"0.3842","facesChecked":3}
-```
-
-**No media content or face images are ever written to the log** — metadata only.
-
----
-
-## Troubleshooting
-
-### "Hi, looks like you are running TensorFlow.js in Node.js…"
-This is an informational message from TF.js, not an error. The forwarder uses the pure-JavaScript TF.js backend intentionally — it works on all Node versions without native compilation. You can safely ignore this message.
-
-### "Could not download media (may have expired)"
-WhatsApp Web sometimes can't access older media if it was never cached locally. This is normal — it only affects messages sent before the forwarder was running.
-
-### Videos aren't matching even though my child is visible
-- Increase `VIDEO_FRAMES_TO_CHECK` (e.g. to 10) for finer sampling
-- Increase `MATCH_THRESHOLD` (e.g. to 0.55 or 0.6) for more lenient matching
-- Ensure the reference photos include side profiles if the child is often filmed from the side
-
-### Process crashes after laptop sleep
-The forwarder includes automatic reconnection logic. If it still fails, restart with `npm start` — the saved session means you won't need to re-scan the QR code.
-
-### QR code doesn't appear / auth fails
-If using `whatsapp-web.js` from npm and WhatsApp has updated its web client, you may need the latest version:
-```bash
-npm install github:wwebjs/whatsapp-web.js
-```
-
-### First face detection is slow
-The first image processed after startup takes 10–30 seconds (model warm-up with pure-JS backend). Subsequent images are processed much faster (~2–5 seconds each).
-
----
-
-## Optional: Auto-Start on Boot
-
-This project does **not** include any auto-start mechanism. If you want it to start automatically:
-
-- **Windows**: Create a Task Scheduler task that runs `node index.js` in this directory on login
-  - Or add a shortcut to `start.bat` in your Startup folder (`shell:startup`)
-- **macOS**: Create a `launchd` plist in `~/Library/LaunchAgents/`
-- **Linux**: Create a `systemd` user service in `~/.config/systemd/user/`
-
-You can also use [PM2](https://pm2.keymetrics.io/) for process management with auto-restart:
-```bash
-npm install -g pm2
-pm2 start index.js --name kid-forwarder
-pm2 save
-pm2 startup
-```
-
----
-
-## Privacy & Ethics Notice
-
-> **Important:** This tool processes photos and videos from a group that contains other people's children. While no faces or images of other children are stored (only your child's numeric embedding is persisted, and all other face data is processed transiently in memory), you should:
->
-> 1. **Inform the other parents and/or the teacher** that you're filtering and re-sharing media from the group
-> 2. Be transparent about what the tool does (even though it's local-only)
-> 3. Respect any parent who objects — their children's images are being processed, even if only transiently
->
-> **What is stored locally:**
-> - Your child's face embedding (128 numbers in `data/child-reference.json`) — not a photo
-> - WhatsApp session tokens (in `.wwebjs_auth/`)
-> - Message ID log for deduplication (in `data/processed-messages.json`)
-> - Activity metadata log (in `logs/activity.log`)
->
-> **What is NOT stored:**
-> - Photos or videos of any child
-> - Face descriptors of other children
-> - Message content beyond metadata
->
-> The `.gitignore` excludes all sensitive directories (`data/`, `.wwebjs_auth/`, `logs/`, `models/`) from version control.
-
----
-
-## Tech Stack
-
-| Component | Package | Purpose |
-|:---|:---|:---|
-| WhatsApp | `whatsapp-web.js` | WhatsApp Web protocol via Puppeteer |
-| Face recognition | `@vladmandic/face-api` | SSD MobileNet + landmarks + recognition |
-| ML backend | `@tensorflow/tfjs` | Pure-JS tensor computation (no native build) |
-| Image decoding | `sharp` | Fast image decode to raw RGB pixels |
-| Video frames | `fluent-ffmpeg` | FFmpeg wrapper for frame extraction |
-| FFmpeg binary | `@ffmpeg-installer/ffmpeg` | Portable bundled ffmpeg binary |
-
----
-
-## Project Structure
-
-```
-photo_forward/
-├── index.js                 # Main monitoring loop
-├── enroll.js                # Face enrollment CLI
-├── list-chats.js            # Chat ID discovery CLI
-├── download-models.js       # One-time model setup (copies from npm package)
-├── start.bat                # Windows double-click launcher
-├── lib/
-│   ├── whatsapp.js          # WhatsApp client setup + reconnection
-│   ├── faceMatch.js         # Face detection, recognition, matching
-│   ├── videoFrames.js       # FFmpeg frame extraction
-│   ├── dedupe.js            # Message deduplication tracker
-│   └── logger.js            # JSON-lines file logger
-├── models/                  # Face-api model weights (copied from npm)
-├── data/                    # Reference embedding + deduplication state
-├── logs/                    # Activity logs
-├── .env                     # Your configuration
-├── .env.example             # Configuration template
-├── .gitignore               # Excludes sensitive data from VCS
-├── package.json             # Dependencies and scripts
-└── README.md                # This file
-```
-
----
-
-## License
-
-Personal use only. Not affiliated with WhatsApp or Meta.
+Distributed under the MIT License. 100% Free and Open Source.

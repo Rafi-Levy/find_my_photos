@@ -1033,3 +1033,116 @@ input:checked + .slider:before {
   from { transform: translateY(20px); opacity: 0; }
   to { transform: translateY(0); opacity: 1; }
 }
+
+/* Child Name Row & Profiles */
+.child-name-row {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.child-name-row label {
+  font-size: 14px;
+}
+.form-input-sm {
+  padding: 6px 10px;
+  font-size: 13px;
+  border-radius: var(--radius-sm);
+  border: 1px solid var(--border);
+  outline: none;
+  font-weight: 600;
+  max-width: 180px;
+}
+.form-input-sm:focus {
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.enrolled-profiles-container {
+  margin-top: 16px;
+  padding-top: 12px;
+  border-top: 1px solid var(--border);
+}
+.enrolled-profiles-container h4 {
+  font-size: 13px;
+  color: var(--text-muted);
+  margin-bottom: 8px;
+}
+.enrolled-profiles-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+.profile-pill {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 9999px;
+  background: #f1f5f9;
+  border: 1px solid var(--border);
+  font-size: 13px;
+  font-weight: 600;
+}
+.profile-delete {
+  background: none;
+  border: none;
+  color: #94a3b8;
+  cursor: pointer;
+  font-size: 14px;
+  line-height: 1;
+}
+.profile-delete:hover {
+  color: #ef4444;
+}
+
+/* Test Recognition Simulator */
+.drop-zone-test {
+  border-color: #c084fc;
+  background: #faf5ff;
+}
+.drop-zone-test:hover, .drop-zone-test.dragover {
+  background: #f3e8ff;
+  border-color: #a855f7;
+}
+
+.test-result-box {
+  margin-top: 20px;
+  padding: 18px;
+  border-radius: var(--radius);
+  border: 1px solid var(--border);
+  background: white;
+  animation: slideUp 0.25s ease;
+}
+.test-result-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 8px;
+}
+.test-result-faces {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.test-result-score {
+  font-size: 22px;
+  font-weight: 800;
+  margin-bottom: 4px;
+}
+.test-result-verdict {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 6px;
+}
+.test-result-advice {
+  font-size: 12px;
+  color: var(--text-muted);
+}
+.badge-match-yes {
+  background: #d1fae5;
+  color: #065f46;
+}
+.badge-match-no {
+  background: #fee2e2;
+  color: #991b1b;
+}
+
