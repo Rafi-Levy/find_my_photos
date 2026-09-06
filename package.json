@@ -1,0 +1,29 @@
+{
+  "name": "whatsapp-kid-forwarder",
+  "version": "1.0.0",
+  "description": "Local WhatsApp media forwarder with face recognition — watches a group, detects your child's face, forwards matching photos/videos.",
+  "private": true,
+  "scripts": {
+    "start": "node index.js",
+    "enroll": "node enroll.js",
+    "list-chats": "node list-chats.js",
+    "search-chats": "node search-chats.js",
+    "download-models": "node download-models.js",
+    "test-safety": "node test-safety.js",
+    "postinstall": "node scripts/patch-wwebjs.js"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "dependencies": {
+    "whatsapp-web.js": "^1.26.1-alpha.3",
+    "qrcode-terminal": "^0.12.0",
+    "@vladmandic/face-api": "^1.7.14",
+    "@tensorflow/tfjs": "^4.22.0",
+    "sharp": "^0.33.5",
+    "fluent-ffmpeg": "^2.1.3",
+    "@ffmpeg-installer/ffmpeg": "^1.1.0",
+    "@ffprobe-installer/ffprobe": "^1.4.2",
+    "dotenv": "^16.4.7"
+  }
+}

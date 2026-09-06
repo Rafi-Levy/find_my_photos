@@ -1,0 +1,53 @@
+# Dependencies
+node_modules/
+
+# WhatsApp session data & cache (contains authentication tokens & keys)
+.wwebjs_auth/
+.wwebjs_cache/
+
+# Face recognition data (biometric embedding & message deduplication state)
+data/
+
+# Runtime logs
+logs/
+*.log
+
+# Downloaded model weights (~12 MB)
+models/
+
+# Environment configs with personal chat IDs
+.env
+.env.*
+.env*.local
+!.env.example
+
+# Training photos containing child faces (private)
+train_photos/
+
+# Match previews & test preview outputs
+matches_preview/
+matches_preview_test/
+
+# Fail-safe: Prevent accidental media tracking anywhere in the repository
+*.jpg
+*.jpeg
+*.png
+*.webp
+*.mp4
+*.mov
+*.avi
+
+# Temp files
+*.tmp
+tmp/
+
+# OS and Editor metadata
+.DS_Store
+Thumbs.db
+desktop.ini
+*.lnk
+.vscode/
+.idea/
+*.swp
+
+
