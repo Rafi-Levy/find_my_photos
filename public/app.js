@@ -598,7 +598,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const item = document.createElement('div');
     item.className = 'train-log-item ' + (progress.detected ? 'train-log-success' : 'train-log-fail');
-    item.textContent = `${progress.filename}: ${progress.detected ? 'Face detected ✓' : 'No face found ✗'}`;
+    const cachedTag = progress.cached ? ' [cached ⚡]' : '';
+    item.textContent = `${progress.filename}${cachedTag}: ${progress.detected ? 'Face detected ✓' : 'No face found ✗'}`;
     elements.trainLogList.appendChild(item);
     elements.trainLogList.scrollTop = elements.trainLogList.scrollHeight;
   }

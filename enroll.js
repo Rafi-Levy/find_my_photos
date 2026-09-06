@@ -18,6 +18,7 @@ require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
 const { loadModels, extractSingleDescriptor, averageDescriptors } = require('./lib/faceMatch');
+const { loadCache, saveCache, getCachedEntry, setCachedEntry } = require('./lib/faceCache');
 
 const SUPPORTED_EXTENSIONS = ['.jpg', '.jpeg', '.png', '.bmp', '.webp'];
 
@@ -33,14 +34,18 @@ async function main() {
     process.exit(1);
   }
 
-  // Load face recognition models
+  // Prepare face recognition models path & cache
   const modelsDir = path.resolve(process.env.MODELS_PATH || './models');
   if (!fs.existsSync(modelsDir)) {
     console.error(`Models directory not found: ${modelsDir}`);
     console.error('Run `npm run download-models` first.');
     process.exit(1);
   }
-  await loadModels(modelsDir);
+
+  const cachePath = path.resolve(process.env.TRAIN_CACHE_PATH || './data/train-cache.json');
+  const cache = loadCache(cachePath);
+  let cacheDirty = false;
+  let modelsLoaded = false;
 
   // Find image files in the provided directory
   const files = fs.readdirSync(resolvedDir)
@@ -56,7 +61,7 @@ async function main() {
   }
 
   console.log(`\nFound ${files.length} image(s) in ${resolvedDir}`);
-  console.log('Processing each photo for face detection...\n');
+  console.log('Processing photos for face detection...\n');
 
   // Extract a face descriptor from each photo
   const descriptors = [];
@@ -67,18 +72,45 @@ async function main() {
     process.stdout.write(`  ${basename.padEnd(40)}`);
     try {
       const buffer = fs.readFileSync(file);
-      const descriptor = await extractSingleDescriptor(buffer);
-      if (descriptor) {
-        descriptors.push(descriptor);
-        console.log('✓ face detected');
+      const cacheEntry = getCachedEntry(cache, buffer);
+
+      if (cacheEntry.hit) {
+        if (cacheEntry.detected && cacheEntry.descriptor) {
+          descriptors.push(cacheEntry.descriptor);
+          console.log('✓ face detected (cached ⚡)');
+        } else {
+          failures.push(basename);
+          console.log('✗ no face detected (cached)');
+        }
       } else {
-        failures.push(basename);
-        console.log('✗ no face detected');
+        if (!modelsLoaded) {
+          await loadModels(modelsDir);
+          modelsLoaded = true;
+        }
+        const descriptor = await extractSingleDescriptor(buffer);
+        if (descriptor) {
+          descriptors.push(descriptor);
+          console.log('✓ face detected');
+        } else {
+          failures.push(basename);
+          console.log('✗ no face detected');
+        }
+        setCachedEntry(cache, cacheEntry.hash, {
+          filename: basename,
+          detected: Boolean(descriptor),
+          descriptor,
+          error: null
+        });
+        cacheDirty = true;
       }
     } catch (err) {
       failures.push(basename);
       console.log(`✗ error: ${err.message}`);
     }
+  }
+
+  if (cacheDirty) {
+    saveCache(cachePath, cache);
   }
 
   // Report results
