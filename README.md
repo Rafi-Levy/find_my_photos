@@ -37,25 +37,55 @@ cd photo_forward
 npm install
 ```
 
-> First install may take a minute or two to download all packages.
+> Neural network face-recognition models (~12 MB) are automatically copied and prepared during `npm install`.
 
-### 2. Set up face recognition models
-
-```bash
-npm run download-models
-```
-
-This copies the neural network weights (~12 MB) from the installed npm package into the `models/` folder (one-time, instant).
-
-### 3. Create your configuration
+### 2. Run the Guided Setup Wizard
 
 ```bash
-copy .env.example .env
+npm run setup
 ```
 
-(On macOS/Linux: `cp .env.example .env`)
+*(On Windows, you can simply double-click `setup.bat`)*
 
-Leave the chat IDs blank for now — you'll fill them in after step 5.
+The setup wizard will guide you step-by-step:
+1. **Auto-creates** your `.env` configuration and necessary folders
+2. **Enrolls your child's face** using photos in `train_photos/`
+3. **Connects to WhatsApp** and lets you search and select your kindergarten group (`SOURCE_CHAT_ID`) and destination chat (`TARGET_CHAT_ID`)
+
+### 3. (Optional) Test Face Recognition Offline
+
+Verify accuracy and threshold on any photo before starting:
+
+```bash
+npm run test-match -- path/to/photo.jpg
+```
+
+### 4. Start Monitoring
+
+```bash
+npm start
+```
+
+*(Or double-click `start.bat` on Windows)*
+
+---
+
+## Useful Helper Commands
+
+| Command | Description |
+|:---|:---|
+| `npm run setup` (or `setup.bat`) | Interactive guided wizard for 1-step onboarding |
+| `npm run doctor` | Pre-flight health check (verifies Node, models, reference, `.env`, FFmpeg) |
+| `npm run test-match -- <path>` | Test face recognition against your child's reference embedding offline |
+| `npm run matches` | View terminal summary of recent matches saved in `matches_preview/` |
+| `npm run test-safety` | Run the automated 6-point safety test suite (anti-echo, dry-run, group locks) |
+| `npm run search-chats` | Search WhatsApp chats interactively by name and update `.env` |
+| `npm run list-chats` | Print all WhatsApp groups and individual contacts with their IDs |
+| `npm run enroll` | Re-enroll child reference embedding from photos in `train_photos/` |
+
+---
+
+## Manual Step-by-Step Setup (Alternative)
 
 ### 4. Enroll your child's face
 

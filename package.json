@@ -5,12 +5,16 @@
   "private": true,
   "scripts": {
     "start": "node index.js",
+    "setup": "node scripts/setup.js",
+    "doctor": "node scripts/doctor.js",
     "enroll": "node enroll.js",
+    "test-match": "node scripts/test-match.js",
+    "matches": "node scripts/matches.js",
     "list-chats": "node list-chats.js",
     "search-chats": "node search-chats.js",
     "download-models": "node download-models.js",
     "test-safety": "node test-safety.js",
-    "postinstall": "node scripts/patch-wwebjs.js"
+    "postinstall": "node scripts/patch-wwebjs.js && node download-models.js"
   },
   "engines": {
     "node": ">=18.0.0"
