@@ -1,0 +1,395 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Kid Photo Auto-Forwarder</title>
+  <link rel="stylesheet" href="style.css" />
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>👶</text></svg>" />
+</head>
+<body>
+  <!-- App Container -->
+  <div class="app-shell">
+    
+    <!-- Top Header -->
+    <header class="top-nav">
+      <div class="nav-brand">
+        <span class="brand-icon">👶</span>
+        <div class="brand-info">
+          <h1>Kid Photo Forwarder</h1>
+          <p class="brand-sub">Private, on-device WhatsApp photo detector</p>
+        </div>
+      </div>
+
+      <div class="nav-controls">
+        <!-- WhatsApp Status Pill -->
+        <div id="wa-status-pill" class="status-pill status-connecting">
+          <span class="status-dot"></span>
+          <span id="wa-status-text">Connecting to WhatsApp...</span>
+          <button id="btn-logout" class="btn-text-action" title="Disconnect WhatsApp" style="display: none;">Logout</button>
+        </div>
+
+        <!-- Monitoring Switch -->
+        <div class="monitoring-control">
+          <label class="toggle-switch">
+            <input type="checkbox" id="monitoring-toggle" checked />
+            <span class="slider"></span>
+          </label>
+          <span id="monitoring-label" class="toggle-label">Monitoring Active</span>
+        </div>
+      </div>
+    </header>
+
+    <!-- Navigation Tabs -->
+    <nav class="tabs-bar">
+      <button class="tab-btn active" data-tab="tab-dashboard">
+        <span class="tab-icon">📊</span> Dashboard
+      </button>
+      <button class="tab-btn" data-tab="tab-train">
+        <span class="tab-icon">📸</span> Child Photos & Training
+        <span id="train-badge" class="badge badge-warning" style="display: none;">Setup Needed</span>
+      </button>
+      <button class="tab-btn" data-tab="tab-settings">
+        <span class="tab-icon">⚙️</span> Settings
+      </button>
+    </nav>
+
+    <!-- Main Content Area -->
+    <main class="main-content">
+      
+      <!-- =================================================================== -->
+      <!-- TAB 1: DASHBOARD -->
+      <!-- =================================================================== -->
+      <section id="tab-dashboard" class="tab-pane active">
+        
+        <!-- QR Code Banner (shown if waiting for QR) -->
+        <div id="qr-banner" class="card qr-card" style="display: none;">
+          <div class="qr-content">
+            <div class="qr-instructions">
+              <h2>📱 Link Your WhatsApp</h2>
+              <p>Scan this QR code with your phone to start monitoring:</p>
+              <ol class="steps-list">
+                <li>Open <strong>WhatsApp</strong> on your phone</li>
+                <li>Go to <strong>Settings</strong> → <strong>Linked Devices</strong></li>
+                <li>Tap <strong>Link a Device</strong> and point your camera here</li>
+              </ol>
+              <div class="qr-note">
+                🔒 Your session is saved securely on this computer. You won't need to scan again next time!
+              </div>
+            </div>
+            <div class="qr-image-wrapper">
+              <img id="qr-img" src="" alt="WhatsApp QR Code" />
+              <div id="qr-spinner" class="qr-spinner">Generating QR code...</div>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Setup Callout (shown if not trained or not configured) -->
+        <div id="setup-callout" class="callout callout-info" style="display: none;">
+          <div class="callout-icon">💡</div>
+          <div class="callout-body">
+            <h4 id="setup-callout-title">Quick Setup Steps Remaining</h4>
+            <p id="setup-callout-desc">Complete these steps so the app can recognize your child:</p>
+            <div class="callout-actions">
+              <button id="callout-train-btn" class="btn btn-sm btn-primary">Add Child Photos</button>
+              <button id="callout-settings-btn" class="btn btn-sm btn-secondary">Pick WhatsApp Group</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Stats Overview Cards -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-icon-wrapper icon-checked">📷</div>
+            <div class="stat-details">
+              <span class="stat-title">Media Checked</span>
+              <div class="stat-number" id="stat-checked">0</div>
+              <span class="stat-subtitle">Photos & videos scanned</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper icon-matched">⭐</div>
+            <div class="stat-details">
+              <span class="stat-title">Matches Found</span>
+              <div class="stat-number" id="stat-matched">0</div>
+              <span class="stat-subtitle">Your child recognized</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper icon-forwarded">🚀</div>
+            <div class="stat-details">
+              <span class="stat-title">Forwarded</span>
+              <div class="stat-number" id="stat-forwarded">0</div>
+              <span class="stat-subtitle" id="stat-forwarded-sub">Review Mode</span>
+            </div>
+          </div>
+
+          <div class="stat-card">
+            <div class="stat-icon-wrapper icon-time">⏱️</div>
+            <div class="stat-details">
+              <span class="stat-title">Last Activity</span>
+              <div class="stat-number stat-time" id="stat-time">Never</div>
+              <span class="stat-subtitle" id="stat-child-status">Face Profile: Loaded</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Content Grid: Recent Matches & Live Log -->
+        <div class="dashboard-columns">
+          
+          <!-- Column 1: Recent Matches Gallery -->
+          <div class="card matches-card">
+            <div class="card-header">
+              <div class="header-title">
+                <h3>⭐ Recent Matched Photos</h3>
+                <span class="header-sub">Photos and videos of your child detected by the app</span>
+              </div>
+              <button id="btn-open-preview-folder" class="btn btn-sm btn-outline" title="Open folder on computer">📁 Open Folder</button>
+            </div>
+
+            <div id="matches-gallery" class="matches-gallery">
+              <!-- Dynamically populated or empty state -->
+              <div class="empty-state">
+                <div class="empty-icon">🖼️</div>
+                <p>No matches yet</p>
+                <span>When new photos of your child arrive in the watched group, they will appear here automatically.</span>
+              </div>
+            </div>
+          </div>
+
+          <!-- Column 2: Live Activity Log -->
+          <div class="card log-card">
+            <div class="card-header">
+              <div class="header-title">
+                <h3>📋 Live Activity</h3>
+                <span class="header-sub">Real-time status and detection feed</span>
+              </div>
+              <button id="btn-clear-stats" class="btn btn-sm btn-ghost" title="Reset counters">Reset Counters</button>
+            </div>
+
+            <div id="log-stream" class="log-stream">
+              <div class="log-entry log-info">
+                <span class="log-time">--:--</span>
+                <span class="log-text">App started. Waiting for activity...</span>
+              </div>
+            </div>
+          </div>
+
+        </div>
+
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 2: CHILD PHOTOS & TRAINING -->
+      <!-- =================================================================== -->
+      <section id="tab-train" class="tab-pane">
+        <div class="card">
+          <div class="card-header">
+            <div class="header-title">
+              <h2>📸 Child Face Recognition Training</h2>
+              <p class="header-sub">Add 5–15 clear photos of your child. All photos stay 100% private on your computer.</p>
+            </div>
+            <div id="training-status-badge" class="badge badge-success">Trained & Ready</div>
+          </div>
+
+          <!-- Training Tips -->
+          <div class="tips-box">
+            <h4>💡 Tips for best accuracy:</h4>
+            <ul>
+              <li>Use <strong>5 to 15 different photos</strong> (alone in the picture, good lighting).</li>
+              <li>Include different expressions (smiling, neutral) and slight angles.</li>
+              <li>Avoid photos where hats, pacifiers, sunglasses, or heavy shadows cover the face.</li>
+            </ul>
+          </div>
+
+          <!-- Drag and Drop Upload Box -->
+          <div id="drop-zone" class="drop-zone">
+            <div class="drop-zone-icon">📤</div>
+            <h3>Drag & drop photos of your child here</h3>
+            <p>or click below to select photos from your computer</p>
+            <input type="file" id="file-input" multiple accept="image/jpeg,image/png,image/webp" style="display: none;" />
+            <button id="btn-browse-files" class="btn btn-primary" type="button">Select Photos</button>
+            <span class="drop-zone-note">Supported formats: JPG, PNG, WEBP (Max 25MB each)</span>
+          </div>
+
+          <!-- Photos Grid -->
+          <div class="train-photos-section">
+            <div class="section-title-row">
+              <h3>Current Reference Photos (<span id="photo-count">0</span>)</h3>
+              <button id="btn-refresh-photos" class="btn btn-sm btn-ghost">↻ Refresh</button>
+            </div>
+
+            <div id="train-photos-grid" class="photos-grid">
+              <!-- Dynamically populated photos -->
+            </div>
+          </div>
+
+          <!-- Train Action Bar -->
+          <div class="train-action-bar">
+            <div class="train-action-info">
+              <h4 id="train-status-text">Ready to train</h4>
+              <p id="train-status-sub">Press train whenever you add new photos.</p>
+            </div>
+            <button id="btn-run-train" class="btn btn-lg btn-success">
+              <span>🚀 Train Child Recognition</span>
+            </button>
+          </div>
+
+          <!-- Training Progress Modal / Container -->
+          <div id="train-progress-box" class="train-progress-box" style="display: none;">
+            <div class="progress-bar-wrapper">
+              <div id="train-progress-fill" class="progress-bar-fill" style="width: 0%;"></div>
+            </div>
+            <div id="train-progress-details" class="train-progress-details">
+              Processing photos...
+            </div>
+            <div id="train-log-list" class="train-log-list"></div>
+          </div>
+
+        </div>
+      </section>
+
+      <!-- =================================================================== -->
+      <!-- TAB 3: SETTINGS (PLAIN ENGLISH) -->
+      <!-- =================================================================== -->
+      <section id="tab-settings" class="tab-pane">
+        <div class="card settings-card">
+          <div class="card-header">
+            <div class="header-title">
+              <h2>⚙️ App Settings</h2>
+              <p class="header-sub">Configure how and where the app watches and forwards photos.</p>
+            </div>
+            <button id="btn-save-settings" class="btn btn-primary">💾 Save Settings</button>
+          </div>
+
+          <form id="settings-form" class="settings-form">
+            
+            <!-- Section 1: Chats -->
+            <div class="settings-group">
+              <h3>1. WhatsApp Chats</h3>
+              
+              <!-- Source Chat -->
+              <div class="form-field">
+                <label for="select-source">
+                  <strong>Kindergarten / School Group to Watch</strong>
+                  <span class="field-hint">The WhatsApp group where teachers or caregivers send class photos.</span>
+                </label>
+                <div class="input-with-action">
+                  <select id="select-source" class="form-select">
+                    <option value="">-- Select a group --</option>
+                  </select>
+                  <button type="button" id="btn-refresh-chats" class="btn btn-secondary btn-icon" title="Reload chats from WhatsApp">↻ Refresh</button>
+                </div>
+                <small class="field-id-display" id="source-id-display"></small>
+              </div>
+
+              <!-- Target Chat -->
+              <div class="form-field">
+                <label for="select-target">
+                  <strong>Where to Forward Photos</strong>
+                  <span class="field-hint">Your own chat, spouse/co-parent, or a private family group.</span>
+                </label>
+                <div class="input-with-action">
+                  <select id="select-target" class="form-select">
+                    <option value="">-- Select a contact or group --</option>
+                  </select>
+                </div>
+                <small class="field-id-display" id="target-id-display"></small>
+              </div>
+            </div>
+
+            <hr class="divider" />
+
+            <!-- Section 2: Sending Mode -->
+            <div class="settings-group">
+              <h3>2. Sending Mode</h3>
+              <p class="section-desc">Choose whether the app should automatically send messages or just review them first.</p>
+
+              <div class="radio-cards-grid">
+                
+                <label class="radio-card">
+                  <input type="radio" name="sending_mode" value="dry_run" id="mode-dry-run" checked />
+                  <div class="radio-card-content">
+                    <div class="radio-card-icon">🛡️</div>
+                    <div class="radio-card-text">
+                      <strong>Practice Mode (Review Only)</strong>
+                      <p>The app finds your child and saves photos to your computer for review, but <strong>sends zero messages</strong> to WhatsApp. Perfect for testing accuracy!</p>
+                    </div>
+                  </div>
+                </label>
+
+                <label class="radio-card">
+                  <input type="radio" name="sending_mode" value="live" id="mode-live" />
+                  <div class="radio-card-content">
+                    <div class="radio-card-icon">🚀</div>
+                    <div class="radio-card-text">
+                      <strong>Live Auto-Forwarding</strong>
+                      <p>Immediately and automatically forwards photos and videos to the recipient as soon as a match is detected.</p>
+                    </div>
+                  </div>
+                </label>
+
+              </div>
+            </div>
+
+            <hr class="divider" />
+
+            <!-- Section 3: Face Recognition Strictness -->
+            <div class="settings-group">
+              <h3>3. Recognition Strictness</h3>
+              <p class="section-desc">Adjust how strictly the face recognition compares faces.</p>
+
+              <div class="slider-wrapper">
+                <div class="slider-labels">
+                  <span class="label-strict">🟣 Strict</span>
+                  <span class="label-balanced">🔵 Balanced (Recommended)</span>
+                  <span class="label-relaxed">🟢 Relaxed</span>
+                </div>
+                <input type="range" id="slider-threshold" min="0.42" max="0.58" step="0.01" value="0.50" class="form-slider" />
+                <div class="slider-value-preview">
+                  Current setting: <strong id="slider-desc">Balanced (0.50)</strong>
+                </div>
+              </div>
+            </div>
+
+            <hr class="divider" />
+
+            <!-- Section 4: Video Checking -->
+            <div class="settings-group">
+              <h3>4. Video Scanning</h3>
+              <div class="form-field">
+                <label for="select-video-frames">
+                  <strong>Frames to check per video</strong>
+                  <span class="field-hint">More frames catch quicker glimpses of your child, but take slightly longer to process.</span>
+                </label>
+                <select id="select-video-frames" class="form-select" style="max-width: 260px;">
+                  <option value="3">3 frames (Fastest)</option>
+                  <option value="5" selected>5 frames (Balanced — Recommended)</option>
+                  <option value="8">8 frames (Thorough)</option>
+                  <option value="12">12 frames (Deep scan)</option>
+                </select>
+              </div>
+            </div>
+
+            <!-- Sticky Save Bar -->
+            <div class="settings-save-bar">
+              <button type="submit" class="btn btn-lg btn-primary">💾 Save Settings</button>
+              <span id="save-feedback" class="save-feedback"></span>
+            </div>
+
+          </form>
+        </div>
+      </section>
+
+    </main>
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
