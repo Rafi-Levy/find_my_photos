@@ -1,4 +1,4 @@
-# 👶 WhatsApp Kid-Photo Auto-Forwarder
+# 📸 WhatsApp Kid-Photo Auto-Forwarder
 
 > **Never miss a photo of your child again.**  
 > An automatic, 100% private, on-device WhatsApp monitor that watches your child's kindergarten or school group, detects your child's face in incoming photos and videos, and automatically forwards them to you or your family group.
@@ -23,7 +23,7 @@
 * 📊 **Simple Web Dashboard:** View live counters for photos checked, matches found, and forwarded media.
 * 📱 **Easy WhatsApp Pairing:** Scan a QR code right on your screen once—stays permanently linked.
 * 📸 **Drag & Drop Face Training:** Add 5–15 photos of your child and train face recognition with a single click.
-* 👨‍👩‍👧‍👦 **Multi-Child Profiles:** Enroll siblings (e.g. Liam & Maya) so photos of either child get detected.
+* 👥 **Multi-Child Profiles:** Enroll siblings (e.g. Liam & Maya) so photos of either child get detected.
 * 🧪 **Test Recognition Simulator:** Drop any photo from your phone or family album to test accuracy on the spot before going live.
 * ⚙️ **Plain English Settings:** Pick your kindergarten group and recipient from friendly dropdowns—no technical IDs or code.
 * 🖥️ **Desktop Shortcut:** 1-click desktop icon so you can launch the app directly from your Windows Desktop.
@@ -110,8 +110,8 @@ If you prefer using the command line:
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-username/whatsapp-kid-photo-forwarder.git
-cd whatsapp-kid-photo-forwarder
+git clone https://github.com/Rafi-Levy/find_my_photos.git
+cd find_my_photos
 
 # Install dependencies & prepare face models
 npm install

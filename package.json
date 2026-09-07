@@ -15,6 +15,7 @@
     "list-chats": "node list-chats.js",
     "search-chats": "node search-chats.js",
     "download-models": "node download-models.js",
+    "test": "node test-safety.js",
     "test-safety": "node test-safety.js",
     "postinstall": "node scripts/patch-wwebjs.js && node download-models.js"
   },

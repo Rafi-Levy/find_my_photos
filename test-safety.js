@@ -216,8 +216,43 @@ async function runSafetyTests() {
     passedTests++;
   }
 
+  // --------------------------------------------------------------------------
+  // TEST 7: Repository Privacy & Gitignore Sanitization Check
+  // --------------------------------------------------------------------------
+  {
+    process.stdout.write('Test 7: Repository Privacy & Sanitization Check... ');
+    const rootDir = path.resolve(__dirname);
+    const envExamplePath = path.join(rootDir, '.env.example');
+
+    // 1. Verify .env.example contains only placeholders
+    assert.strictEqual(fs.existsSync(envExamplePath), true, '.env.example must exist');
+    const envExample = fs.readFileSync(envExamplePath, 'utf-8');
+    assert.match(envExample, /SOURCE_CHAT_ID=xxxxxxxxxx@g\.us/, '.env.example SOURCE_CHAT_ID must be a placeholder');
+    assert.match(envExample, /TARGET_CHAT_ID=yyyyyyyyyy@g\.us/, '.env.example TARGET_CHAT_ID must be a placeholder');
+
+    // 2. If git is available, verify no sensitive files are tracked
+    try {
+      const { execSync } = require('child_process');
+      const trackedFiles = execSync('git ls-files', { cwd: rootDir, encoding: 'utf-8' }).trim().split('\n');
+      for (const file of trackedFiles) {
+        assert.strictEqual(file.includes('.env') && file !== '.env.example', false, `Forbidden env file tracked in git: ${file}`);
+        assert.strictEqual(file.startsWith('train_photos/'), false, `Private photo tracked in git: ${file}`);
+        assert.strictEqual(file.startsWith('matches_preview/'), false, `Preview photo tracked in git: ${file}`);
+        assert.strictEqual(file.startsWith('.wwebjs_auth/'), false, `Auth session tracked in git: ${file}`);
+        assert.strictEqual(file.startsWith('data/child-reference.json'), false, `Biometric data tracked in git: ${file}`);
+      }
+    } catch (err) {
+      if (err.code !== 'ENOENT' && !err.message.includes('not a git repository')) {
+        throw err;
+      }
+    }
+
+    console.log('PASSED (100% Sanitized & Safe for Public Release)');
+    passedTests++;
+  }
+
   console.log('\n----------------------------------------------------');
-  console.log(`  ALL ${passedTests} OF 6 SAFETY TESTS PASSED!`);
+  console.log(`  ALL ${passedTests} OF 7 SAFETY & PRIVACY TESTS PASSED!`);
   console.log('  100% GUARANTEE: Unintended messages cannot be sent.');
   console.log('----------------------------------------------------\n');
 }

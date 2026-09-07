@@ -33,13 +33,27 @@ matches_preview_test/
 *.jpeg
 *.png
 *.webp
+*.heic
+*.HEIC
+*.bmp
+*.gif
 *.mp4
 *.mov
 *.avi
+*.mkv
 
-# Temp files
+# Temp & scratch files
 *.tmp
 tmp/
+scratch/
+debug/
+*.dmp
+
+# Security & Private Keys
+*.pem
+*.key
+*.p12
+*.pfx
 
 # OS and Editor metadata
 .DS_Store
