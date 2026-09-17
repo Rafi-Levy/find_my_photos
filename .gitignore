@@ -64,4 +64,7 @@ desktop.ini
 .idea/
 *.swp
 
+# Local dev helper scripts
+restart-service.bat
+
 
