@@ -73,6 +73,8 @@ engine.on('stats', (stats) => broadcastEvent('stats', stats));
 engine.on('match', (match) => broadcastEvent('match', match));
 engine.on('qr', (qr) => broadcastEvent('qr', qr));
 engine.on('train_progress', (p) => broadcastEvent('train_progress', p));
+engine.on('feedback_update', (data) => broadcastEvent('feedback_update', data));
+engine.on('near_miss', (nearMiss) => broadcastEvent('near_miss', nearMiss));
 
 // --- API Endpoints ---
 
@@ -238,6 +240,93 @@ app.post('/api/train/test', upload.single('test_photo'), async (req, res) => {
     }
     res.status(400).json({ success: false, error: err.message });
   }
+});
+
+// === Feedback & Continuous Learning Endpoints ===
+
+// Confirm a match (true positive)
+app.post('/api/feedback/confirm', async (req, res) => {
+  try {
+    const { matchId } = req.body;
+    if (!matchId) return res.status(400).json({ success: false, error: 'matchId is required' });
+    const result = await engine.confirmMatch(matchId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Reject a match (false positive / lookalike)
+app.post('/api/feedback/reject', async (req, res) => {
+  try {
+    const { matchId } = req.body;
+    if (!matchId) return res.status(400).json({ success: false, error: 'matchId is required' });
+    const result = await engine.rejectMatch(matchId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Rescue a near-miss (false negative)
+app.post('/api/feedback/rescue', async (req, res) => {
+  try {
+    const { nearMissId } = req.body;
+    if (!nearMissId) return res.status(400).json({ success: false, error: 'nearMissId is required' });
+    const result = await engine.rescueMiss(nearMissId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Undo a previous feedback action
+app.post('/api/feedback/undo', async (req, res) => {
+  try {
+    const { feedbackId } = req.body;
+    if (!feedbackId) return res.status(400).json({ success: false, error: 'feedbackId is required' });
+    const result = await engine.undoFeedback(feedbackId);
+    res.json(result);
+  } catch (err) {
+    res.status(400).json({ success: false, error: err.message });
+  }
+});
+
+// Get near-misses for user review
+app.get('/api/near-misses', (req, res) => {
+  res.json({ nearMisses: engine.nearMisses.getAll() });
+});
+
+// Get feedback diagnostics and model training metrics
+app.get('/api/feedback/diagnostics', (req, res) => {
+  res.json({
+    classifier: engine.classifierHead.getDiagnostics(),
+    feedback: engine.feedbackStore.getStats(),
+    scoring: {
+      method: engine.classifierHead.isReady() ? 'ensemble' : 'exemplar_distance',
+      classifierWeight: engine.getClassifierWeight(),
+      activeThreshold: engine.config.matchThreshold
+    }
+  });
+});
+
+// Get feedback history log
+app.get('/api/feedback/history', (req, res) => {
+  const limit = parseInt(req.query.limit || '50', 10);
+  res.json({ log: engine.feedbackStore.getFeedbackLog(limit) });
+});
+
+// Reset all feedback data and delete trained classifier head
+app.post('/api/feedback/reset', (req, res) => {
+  engine.feedbackStore.reset();
+  engine.classifierHead.reset();
+  engine.nearMisses.reset();
+  engine.log('info', 'All feedback data, near-misses, and classifier model have been reset.');
+  broadcastEvent('feedback_update', {
+    classifier: engine.classifierHead.getDiagnostics(),
+    feedback: engine.feedbackStore.getStats()
+  });
+  res.json({ success: true, message: 'Feedback and classifier head reset successfully.' });
 });
 
 // Desktop Shortcut Endpoint
